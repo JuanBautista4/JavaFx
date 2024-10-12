@@ -112,20 +112,20 @@ public class PrincipalController implements Initializable{
             }
         };
     }
-    private void quicksort(ObservableList<Data<String, Number>> data, int low, int high) throws InterruptedException {
-        if (low < high) {
-            int pivotIndex = partition(data, low, high);  // Partición alrededor del pivote
-            quicksort(data, low, pivotIndex - 1);  // Ordenar sublista izquierda
-            quicksort(data, pivotIndex + 1, high);  // Ordenar sublista derecha
+    private void quicksort(ObservableList<Data<String, Number>> data, int menor, int mayor) throws InterruptedException {
+        if (menor < mayor) {
+            int pivoteIn = particion(data, menor, mayor);  // Partición alrededor del pivote
+            quicksort(data, menor, pivoteIn - 1);  // Ordenar sublista izquierda
+            quicksort(data, pivoteIn + 1, mayor);  // Ordenar sublista derecha
         }
     }
 
-    private int partition(ObservableList<Data<String, Number>> data, int low, int high) throws InterruptedException {
-        Data<String, Number> pivot = data.get(high);  // Último elemento como pivote
+    private int particion(ObservableList<Data<String, Number>> data, int menor, int may) throws InterruptedException {
+        Data<String, Number> pivot = data.get(may);  // Último elemento como pivote
         Platform.runLater(() -> pivot.getNode().setStyle("-fx-background-color: green;"));  // Resaltar el pivote
-        int i = low - 1;
+        int i = menor - 1;
 
-        for (int j = low; j < high; j++) {
+        for (int j = menor; j < may; j++) {
             Data<String, Number> current = data.get(j);
             if (current.getYValue().doubleValue() < pivot.getYValue().doubleValue()) {
                 i++;
