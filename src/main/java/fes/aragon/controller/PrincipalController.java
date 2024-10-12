@@ -20,8 +20,10 @@ import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Button;
 import javafx.util.Duration;
 public class PrincipalController implements Initializable{
+    public Button btnQuicksort;
     Data<String, Number> primero = null;
     Data<String, Number> segundo = null;
+    Data<String, Number> menor =null;
     int tiempoRetardo=40;
     int numeroDatos=40;
     @FXML
@@ -53,6 +55,89 @@ public class PrincipalController implements Initializable{
         bacGrafica.getData().add(series);
 
     }
+    @FXML
+    void metodoSeleccion(ActionEvent event) {
+        this.btnListaNueva.setDisable(true);
+this.btnBurbuja.setDisable(true);
+this.btnQuicksort.setDisable(true);
+        Task<Void> animateSortTask = seleccionTask(bacGrafica.getData().get(0));
+        exec.submit(animateSortTask);
+    }
+    private Task<Void> seleccionTask(Series<String, Number> series) {
+        return new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                ObservableList<Data<String, Number>> data = series.getData();
+                for (int i = 0; i < data.size() - 1; i++) {
+                    int k = i;
+                    menor = data.get(i);
+
+                    // Resaltar el nodo que estamos considerando como mínimo
+                    Platform.runLater(() -> {
+                        menor.getNode().setStyle("-fx-background-color: green;");
+                    });
+                    Thread.sleep(tiempoRetardo);
+
+                    for (int j = i + 1; j < data.size(); j++) {
+                        Data<String, Number> actual = data.get(j);
+
+                        // Cambiar el color para mostrar que estamos comparando este valor
+                        Platform.runLater(() -> {
+                            actual.getNode().setStyle("-fx-background-color: blue;");
+                        });
+                        Thread.sleep(tiempoRetardo);
+
+                        if (actual.getYValue().doubleValue() < menor.getYValue().doubleValue()) {
+                            // Resetear el color del anterior mínimo
+                            Platform.runLater(() -> {
+                                menor.getNode().setStyle("-fx-background-color: green;");
+                            });
+
+                            k = j;
+                            menor = actual;
+
+                            // Resaltar el nuevo mínimo
+                            Platform.runLater(() -> {
+                                menor.getNode().setStyle("-fx-background-color: green;");
+                            });
+                        }
+                        Thread.sleep(tiempoRetardo);
+
+                        // Resetear el color del nodo comparado si no es el mínimo
+                        Platform.runLater(() -> {
+                            actual.getNode().setStyle("-fx-background-color: red;");
+                        });
+                    }
+
+                    // Intercambiar el valor mínimo encontrado con el valor en la posición i
+                    if (k != i) {
+                        Data<String, Number> actual = data.get(i);
+                        CountDownLatch latch = new CountDownLatch(1);
+                        Platform.runLater(() -> {
+                            Animation swap = createSwapAnimation(actual, menor);
+                            swap.setOnFinished(e -> latch.countDown());
+                            swap.play();
+                        });
+                        latch.await();
+                    }
+
+                    // Resetear el color del nodo seleccionado
+                    Platform.runLater(() -> {
+                        menor.getNode().setStyle("-fx-background-color: none;");
+                    });
+                    Thread.sleep(tiempoRetardo);
+                }
+                btnListaNueva.setDisable(false);
+                btnBurbuja.setDisable(false);
+                btnQuicksort.setDisable(false);
+                return null;
+            }
+        };
+    }
+
+
+
+
     private Task<Void> burbujaTask(Series<String, Number> series) {
 
         return new Task<Void>() {
