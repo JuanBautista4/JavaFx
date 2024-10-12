@@ -39,6 +39,12 @@ public class PrincipalController implements Initializable{
 
     }
     @FXML
+    void metodoQuicksort(ActionEvent event) {
+        this.btnListaNueva.setDisable(true);
+        Task<Void> animateSortTask = quicksortTask(bacGrafica.getData().get(0));
+        exec.submit(animateSortTask);
+    }
+    @FXML
     void metodoListaNueva(ActionEvent event) {
         bacGrafica.getData().clear();
 
@@ -93,6 +99,71 @@ public class PrincipalController implements Initializable{
             }
         };
     }
+
+    //METODO QUICKORT
+    private Task<Void> quicksortTask(Series<String, Number> series) {
+        return new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                ObservableList<Data<String, Number>> data = series.getData();
+                quicksort(data, 0, data.size() - 1);
+                Platform.runLater(() -> btnListaNueva.setDisable(false)); // Habilitar botón al terminar
+                return null;
+            }
+        };
+    }
+    private void quicksort(ObservableList<Data<String, Number>> data, int low, int high) throws InterruptedException {
+        if (low < high) {
+            int pivotIndex = partition(data, low, high);  // Partición alrededor del pivote
+            quicksort(data, low, pivotIndex - 1);  // Ordenar sublista izquierda
+            quicksort(data, pivotIndex + 1, high);  // Ordenar sublista derecha
+        }
+    }
+
+    private int partition(ObservableList<Data<String, Number>> data, int low, int high) throws InterruptedException {
+        Data<String, Number> pivot = data.get(high);  // Último elemento como pivote
+        Platform.runLater(() -> pivot.getNode().setStyle("-fx-background-color: green;"));  // Resaltar el pivote
+        int i = low - 1;
+
+        for (int j = low; j < high; j++) {
+            Data<String, Number> current = data.get(j);
+            if (current.getYValue().doubleValue() < pivot.getYValue().doubleValue()) {
+                i++;
+                Data<String, Number> smallerElement = data.get(i);
+                Platform.runLater(() -> {
+                    current.getNode().setStyle("-fx-background-color: red;");
+                    smallerElement.getNode().setStyle("-fx-background-color: blue;");
+                });
+                Thread.sleep(tiempoRetardo);
+
+                CountDownLatch latch = new CountDownLatch(1);
+                Platform.runLater(() -> {
+                    Animation swap = createSwapAnimation(smallerElement, current);
+                    swap.setOnFinished(e -> latch.countDown());
+                    swap.play();
+                });
+                latch.await();
+            }
+        }
+
+        Data<String, Number> elementAtIPlusOne = data.get(i + 1);
+        Platform.runLater(() -> {
+            pivot.getNode().setStyle("-fx-background-color: blue;");
+            elementAtIPlusOne.getNode().setStyle("-fx-background-color: green;");
+        });
+        Thread.sleep(tiempoRetardo);
+
+        CountDownLatch latch = new CountDownLatch(1);
+        Platform.runLater(() -> {
+            Animation swap = createSwapAnimation(elementAtIPlusOne, pivot);
+            swap.setOnFinished(e -> latch.countDown());
+            swap.play();
+        });
+        latch.await();
+
+        return i + 1;
+    }
+
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
 // TODO Auto-generated method stub
