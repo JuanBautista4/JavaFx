@@ -29,6 +29,6 @@
         </BarChart>
       <Button fx:id="btnSeleccion" layoutX="214.0" layoutY="65.0" mnemonicParsing="false" onAction="#metodoSeleccion" text="Seleccion" />
       <Button fx:id="btnInsercion" layoutX="44.0" layoutY="386.0" mnemonicParsing="false" onAction="#metodoInsercion" text="Insercion" />
-      <Button fx:id="btnSacudida" layoutX="139.0" layoutY="386.0" mnemonicParsing="false" onAction="#metodoSacudida" text="Sacudida" />
+      <Button fx:id="btnSacudida" layoutX="139.0" layoutY="386.0" mnemonicParsing="false" onAction="#metodoSacudida" text="Sacudida1" />
     </children>
 </Pane>
