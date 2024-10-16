@@ -24,7 +24,7 @@ public class PrincipalController implements Initializable{
     Data<String, Number> primero = null;
     Data<String, Number> segundo = null;
     Data<String, Number> menor =null;
-    int tiempoRetardo=5;
+    int tiempoRetardo=40;
     int numeroDatos=40;
     @FXML
     private BarChart<String, Number> bacGrafica;
