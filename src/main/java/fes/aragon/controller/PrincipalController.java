@@ -2,6 +2,7 @@ package fes.aragon.controller;
 import java.net.URL;
 import java.util.Random;
 import java.util.ResourceBundle;
+import java.util.Stack;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -9,6 +10,7 @@ import javafx.animation.Animation;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -38,6 +40,8 @@ public class PrincipalController implements Initializable{
     private Button btnInsercion;
     @FXML
     private Button btnListaNueva;
+    @FXML
+    private Button btnMezcla;
     @FXML
     void metodoBurbuja(ActionEvent event) {
         this.btnListaNueva.setDisable(true);
@@ -71,6 +75,18 @@ public class PrincipalController implements Initializable{
         this.btnInsercion.setDisable(true);
         this.btnSacudida.setDisable(true);
         Task<Void> animateSortTask = metodoSacudida(bacGrafica.getData().get(0));
+        exec.submit(animateSortTask);
+
+    }
+    @FXML
+    void metodoMezcla(ActionEvent event) {
+        this.btnListaNueva.setDisable(true);
+        this.btnBurbuja.setDisable(true);
+        this.btnQuicksort.setDisable(true);
+        this.btnSeleccion.setDisable(true);
+        this.btnInsercion.setDisable(true);
+        this.btnSacudida.setDisable(true);
+        Task<Void> animateSortTask = mezclaTask(bacGrafica.getData().get(0));
         exec.submit(animateSortTask);
 
     }
@@ -297,17 +313,30 @@ for(int h=0;h<data.size();h++) {
             @Override
             protected Void call() throws Exception {
                 ObservableList<Data<String, Number>> data = series.getData();
-                quicksort(data, 0, data.size() - 1);
+                quicksort(data);  // Llamamos al método no recursivo
                 Platform.runLater(() -> btnListaNueva.setDisable(false)); // Habilitar botón al terminar
                 return null;
             }
         };
     }
-    private void quicksort(ObservableList<Data<String, Number>> data, int menor, int mayor) throws InterruptedException {
-        if (menor < mayor) {
-            int pivoteIn = particion(data, menor, mayor);  // Partición alrededor del pivote
-            quicksort(data, menor, pivoteIn - 1);  // Ordenar sublista izquierda
-            quicksort(data, pivoteIn + 1, mayor);  // Ordenar sublista derecha
+
+    private void quicksort(ObservableList<Data<String, Number>> data) throws InterruptedException {
+        // Pila para simular la recursividad
+        Stack<int[]> stack = new Stack<>();
+        stack.push(new int[]{0, data.size() - 1}); // Agregamos el rango inicial
+
+        while (!stack.isEmpty()) {
+            int[] range = stack.pop();
+            int menor = range[0];
+            int mayor = range[1];
+
+            if (menor < mayor) {
+                int pivoteIn = particion(data, menor, mayor); // Partición alrededor del pivote
+
+                // Apilamos los subarreglos a ordenar
+                stack.push(new int[]{menor, pivoteIn - 1}); // Subarreglo izquierdo
+                stack.push(new int[]{pivoteIn + 1, mayor}); // Subarreglo derecho
+            }
         }
     }
 
@@ -351,13 +380,105 @@ for(int h=0;h<data.size();h++) {
             swap.play();
         });
         latch.await();
-        btnListaNueva.setDisable(false);
-        btnBurbuja.setDisable(false);
-        btnQuicksort.setDisable(false);
-        btnInsercion.setDisable(false);
-        btnSeleccion.setDisable(false);
+
+        // Habilitar botones después de la partición
+        Platform.runLater(() -> {
+            btnListaNueva.setDisable(false);
+            btnBurbuja.setDisable(false);
+            btnQuicksort.setDisable(false);
+            btnInsercion.setDisable(false);
+            btnSeleccion.setDisable(false);
+        });
+
         return i + 1;
     }
+    //**********************************************************************//
+    //METODO MEZCLA
+    private Task<Void> mezclaTask(Series<String, Number> series) {
+        return new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                ObservableList<Data<String, Number>> data = series.getData();
+                mezclasort(data);  // Llamamos al método no recursivo
+                Platform.runLater(() -> btnMezcla.setDisable(false)); // Habilitar botón al terminar
+                return null;
+            }
+        };
+    }
+
+    private void mezclasort(ObservableList<Data<String, Number>> data) throws InterruptedException {
+        int n = data.size();
+        // Usaremos una lista temporal para almacenar los datos ordenados
+        ObservableList<Data<String, Number>> temp = FXCollections.observableArrayList();
+
+        // Tamaño del subarreglo
+        for (int size = 1; size < n; size *= 2) {
+            for (int leftStart = 0; leftStart < n; leftStart += 2 * size) {
+                // Definir los índices
+                int leftEnd = Math.min(leftStart + size - 1, n - 1);
+                int rightStart = leftEnd + 1;
+                int rightEnd = Math.min(rightStart + size - 1, n - 1);
+
+                // Realizar la mezcla
+                mezcla(data, temp, leftStart, leftEnd, rightStart, rightEnd);
+            }
+            // Copiar los elementos ordenados de nuevo al arreglo original
+            for (int i = 0; i < n; i++) {
+                data.set(i, temp.get(i));
+            }
+        }
+    }
+
+    private void mezcla(ObservableList<Data<String, Number>> data, ObservableList<Data<String, Number>> temp,
+                        int leftStart, int leftEnd, int rightStart, int rightEnd) throws InterruptedException {
+        int i = leftStart;
+        int j = rightStart;
+        int k = leftStart;
+
+        // Mezclar los dos subarreglos
+        while (i <= leftEnd && j <= rightEnd) {
+            Data<String, Number> leftData = data.get(i);
+            Data<String, Number> rightData = data.get(j);
+
+            // Comparar y agregar el menor a la lista temporal
+            if (leftData.getYValue().doubleValue() <= rightData.getYValue().doubleValue()) {
+                temp.set(k++, leftData);
+                i++;
+            } else {
+                temp.set(k++, rightData);
+                j++;
+            }
+
+            // Resaltar los elementos en la UI
+            Platform.runLater(() -> {
+                leftData.getNode().setStyle("-fx-background-color: red;");
+                rightData.getNode().setStyle("-fx-background-color: blue;");
+            });
+            Thread.sleep(tiempoRetardo);
+        }
+
+        // Copiar los elementos restantes de la izquierda, si los hay
+        while (i <= leftEnd) {
+            temp.set(k++, data.get(i++));
+        }
+
+        // Copiar los elementos restantes de la derecha, si los hay
+        while (j <= rightEnd) {
+            temp.set(k++, data.get(j++));
+        }
+
+        // Habilitar los botones después de la mezcla
+        Platform.runLater(() -> {
+            for (int m = leftStart; m <= rightEnd; m++) {
+                data.set(m, temp.get(m)); // Copiar de vuelta a 'data'
+                Data<String, Number> currentData = data.get(m);
+                currentData.getNode().setStyle("-fx-background-color: green;"); // Resaltar elementos ordenados
+            }
+        });
+
+        Thread.sleep(tiempoRetardo);
+    }
+
     //**********************************************************************//
 
     private Task<Void> metodoSacudida(Series<String, Number> series) {

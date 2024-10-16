@@ -9,6 +9,13 @@ import javafx.fxml.FXMLLoader;
 
 import java.util.Objects;
 
+/*Elaborado por:
+Bautista Solis Juan Pedro
+Calderon Almanza Marvin Daniel
+Villanueva Ricardo
+González Amezquita Héctor Rogelio
+*/
+
 public class Main extends Application {
 
     @Override
