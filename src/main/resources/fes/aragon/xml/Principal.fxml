@@ -18,7 +18,8 @@
         </Label>
         <Button fx:id="btnBurbuja" layoutX="40.0" layoutY="65.0" mnemonicParsing="false" onAction="#metodoBurbuja" text="Burbuja" />
         <Button fx:id="btnListaNueva" layoutX="434.0" layoutY="65.0" mnemonicParsing="false" onAction="#metodoListaNueva" text="Lista Nueva" />
-        <Button fx:id="btnQuicksort" layoutX="117.0" layoutY="65.0" mnemonicParsing="false" onAction="#metodoQuicksort" text="Quicksort" />
+        <Button fx:id="btnQuicksort" layoutX="116.0" layoutY="65.0" mnemonicParsing="false" onAction="#metodoQuicksort" text="Quicksort" />
+
         <BarChart fx:id="bacGrafica" layoutX="26.0" layoutY="98.0" prefHeight="288.0" prefWidth="603.0">
             <xAxis>
                 <CategoryAxis side="BOTTOM" />

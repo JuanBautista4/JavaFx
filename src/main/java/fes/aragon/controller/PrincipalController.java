@@ -1,7 +1,9 @@
 package fes.aragon.controller;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.ResourceBundle;
+import java.util.Stack;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,6 +22,7 @@ import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Button;
 import javafx.util.Duration;
 public class PrincipalController implements Initializable{
+
     Data<String, Number> primero = null;
     Data<String, Number> segundo = null;
     int tiempoRetardo=40;
@@ -31,6 +34,10 @@ public class PrincipalController implements Initializable{
     @FXML
     private Button btnListaNueva;
     @FXML
+    private Button btnQuicksort;
+    @FXML
+    private Button btnMezcla;
+    @FXML
     void metodoBurbuja(ActionEvent event) {
         this.btnListaNueva.setDisable(true);
 
@@ -38,12 +45,7 @@ public class PrincipalController implements Initializable{
         exec.submit(animateSortTask);
 
     }
-    @FXML
-    void metodoQuicksort(ActionEvent event) {
-        this.btnListaNueva.setDisable(true);
-        Task<Void> animateSortTask = quicksortTask(bacGrafica.getData().get(0));
-        exec.submit(animateSortTask);
-    }
+
     @FXML
     void metodoListaNueva(ActionEvent event) {
         bacGrafica.getData().clear();
@@ -52,6 +54,21 @@ public class PrincipalController implements Initializable{
         series = generarAleatoriosEnteros(numeroDatos);
         bacGrafica.getData().add(series);
 
+    }
+
+    /*void metodoMezcla(ActionEvent event) {
+        this.btnMezcla.setDisable(true);
+
+        Task<Void> animateSortTask = mezclaT(bacGrafica.getData().get(0));
+        exec.submit(animateSortTask);
+
+    }*/
+    @FXML
+    public void metodoQuicksort(ActionEvent event) {
+        this.btnQuicksort.setDisable(true);
+
+        Task<Void> animateSortTask = quicksortTask(bacGrafica.getData().get(0));
+        exec.submit(animateSortTask);
     }
     private Task<Void> burbujaTask(Series<String, Number> series) {
 
@@ -99,24 +116,36 @@ public class PrincipalController implements Initializable{
             }
         };
     }
-
-    //METODO QUICKORT
+    //METODO QUICKSORT NO RECURSIVO
     private Task<Void> quicksortTask(Series<String, Number> series) {
         return new Task<Void>() {
             @Override
             protected Void call() throws Exception {
                 ObservableList<Data<String, Number>> data = series.getData();
-                quicksort(data, 0, data.size() - 1);
+                quicksort(data);  // Llamamos al método no recursivo
                 Platform.runLater(() -> btnListaNueva.setDisable(false)); // Habilitar botón al terminar
                 return null;
             }
         };
     }
-    private void quicksort(ObservableList<Data<String, Number>> data, int menor, int mayor) throws InterruptedException {
-        if (menor < mayor) {
-            int pivoteIn = particion(data, menor, mayor);  // Partición alrededor del pivote
-            quicksort(data, menor, pivoteIn - 1);  // Ordenar sublista izquierda
-            quicksort(data, pivoteIn + 1, mayor);  // Ordenar sublista derecha
+
+    private void quicksort(ObservableList<Data<String, Number>> data) throws InterruptedException {
+        // Pila para simular la recursividad
+        Stack<int[]> stack = new Stack<>();
+        stack.push(new int[]{0, data.size() - 1}); // Agregamos el rango inicial
+
+        while (!stack.isEmpty()) {
+            int[] range = stack.pop();
+            int menor = range[0];
+            int mayor = range[1];
+
+            if (menor < mayor) {
+                int pivoteIn = particion(data, menor, mayor); // Partición alrededor del pivote
+
+                // Apilamos los subarreglos a ordenar
+                stack.push(new int[]{menor, pivoteIn - 1}); // Subarreglo izquierdo
+                stack.push(new int[]{pivoteIn + 1, mayor}); // Subarreglo derecho
+            }
         }
     }
 
@@ -161,8 +190,42 @@ public class PrincipalController implements Initializable{
         });
         latch.await();
 
+        // Habilitar botones después de la partición
+        Platform.runLater(() -> {
+            btnListaNueva.setDisable(false);
+            btnBurbuja.setDisable(false);
+            btnQuicksort.setDisable(false);
+            //btnInsercion.setDisable(false);
+            //btnSeleccion.setDisable(false);
+        });
+
         return i + 1;
     }
+
+
+
+
+    // Método para manejar el intercambio visual de los nodos
+    private <T> void swapVisual(Data<?, T> primero, Data<?, T> segundo) throws InterruptedException {
+        double primeroX = primero.getNode().getParent().localToScene(primero.getNode().getBoundsInParent()).getMinX();
+        double segundoX = segundo.getNode().getParent().localToScene(segundo.getNode().getBoundsInParent()).getMinX();
+        double primeroStartTranslate = primero.getNode().getTranslateX();
+        double segundoStartTranslate = segundo.getNode().getTranslateX();
+
+        TranslateTransition primeroTranslate = new TranslateTransition(Duration.millis(tiempoRetardo), primero.getNode());
+        primeroTranslate.setByX(segundoX - primeroX);
+
+        TranslateTransition segundoTranslate = new TranslateTransition(Duration.millis(tiempoRetardo), segundo.getNode());
+        segundoTranslate.setByX(primeroX - segundoX);
+
+        ParallelTransition translate = new ParallelTransition(primeroTranslate, segundoTranslate);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        translate.setOnFinished(e -> latch.countDown());
+        translate.play();
+        latch.await();
+    }
+
 
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
@@ -219,4 +282,7 @@ public class PrincipalController implements Initializable{
         t.setDaemon(true);
         return t;
     });
+
+
+
 }
