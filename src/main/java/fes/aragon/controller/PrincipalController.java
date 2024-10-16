@@ -31,10 +31,20 @@ public class PrincipalController implements Initializable{
     @FXML
     private Button btnBurbuja;
     @FXML
+    private Button btnSacudida;
+    @FXML
+    private Button btnSeleccion;
+    @FXML
+    private Button btnInsercion;
+    @FXML
     private Button btnListaNueva;
     @FXML
     void metodoBurbuja(ActionEvent event) {
         this.btnListaNueva.setDisable(true);
+        this.btnBurbuja.setDisable(true);
+        this.btnQuicksort.setDisable(true);
+        this.btnSeleccion.setDisable(true);
+        this.btnInsercion.setDisable(true);
 
         Task<Void> animateSortTask = burbujaTask(bacGrafica.getData().get(0));
         exec.submit(animateSortTask);
@@ -43,7 +53,21 @@ public class PrincipalController implements Initializable{
     @FXML
     void metodoQuicksort(ActionEvent event) {
         this.btnListaNueva.setDisable(true);
+        this.btnBurbuja.setDisable(true);
+        this.btnQuicksort.setDisable(true);
+        this.btnSeleccion.setDisable(true);
+        this.btnInsercion.setDisable(true);
         Task<Void> animateSortTask = quicksortTask(bacGrafica.getData().get(0));
+        exec.submit(animateSortTask);
+    }
+    @FXML
+    void metodoSacudida(ActionEvent event) {
+        this.btnListaNueva.setDisable(true);
+        this.btnBurbuja.setDisable(true);
+        this.btnQuicksort.setDisable(true);
+        this.btnSeleccion.setDisable(true);
+        this.btnInsercion.setDisable(true);
+        Task<Void> animateSortTask = sacudidaTask(bacGrafica.getData().get(0));
         exec.submit(animateSortTask);
     }
     @FXML
@@ -56,10 +80,23 @@ public class PrincipalController implements Initializable{
 
     }
     @FXML
+    void metodoInsercion(ActionEvent event) {
+        this.btnListaNueva.setDisable(true);
+        this.btnBurbuja.setDisable(true);
+        this.btnQuicksort.setDisable(true);
+        this.btnSeleccion.setDisable(true);
+        this.btnInsercion.setDisable(true);
+        Task<Void> animateSortTask = insercionTask(bacGrafica.getData().get(0));
+        exec.submit(animateSortTask);
+
+    }
+    @FXML
     void metodoSeleccion(ActionEvent event) {
         this.btnListaNueva.setDisable(true);
 this.btnBurbuja.setDisable(true);
 this.btnQuicksort.setDisable(true);
+        this.btnInsercion.setDisable(true);
+        this.btnSeleccion.setDisable(true);
         Task<Void> animateSortTask = seleccionTask(bacGrafica.getData().get(0));
         exec.submit(animateSortTask);
     }
@@ -130,6 +167,8 @@ this.btnQuicksort.setDisable(true);
                 btnListaNueva.setDisable(false);
                 btnBurbuja.setDisable(false);
                 btnQuicksort.setDisable(false);
+                btnInsercion.setDisable(false);
+                btnSeleccion.setDisable(false);
                 return null;
             }
         };
@@ -180,10 +219,71 @@ this.btnQuicksort.setDisable(true);
                     }
                 }
                 btnListaNueva.setDisable(false);
+                btnBurbuja.setDisable(false);
+                btnQuicksort.setDisable(false);
+                btnInsercion.setDisable(false);
+                btnSeleccion.setDisable(false);
                 return null;
             }
         };
     }
+
+    private Task<Void> insercionTask(Series<String, Number> series) {
+
+        return new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                ObservableList<Data<String, Number>> data = series.getData();
+for(int h=0;h<data.size();h++) {
+    for (int i = 1; i < data.size(); i++) {
+        Data<String, Number> actual = data.get(i);
+        int j = i - 1;
+
+        Platform.runLater(() -> actual.getNode().setStyle("-fx-background-color: red;"));
+        Thread.sleep(tiempoRetardo);
+
+        while (j >= 0 && data.get(j).getYValue().doubleValue() > actual.getYValue().doubleValue()) {
+            Data<String, Number> anterior = data.get(j);
+
+            Platform.runLater(() -> anterior.getNode().setStyle("-fx-background-color: green;"));
+            Thread.sleep(tiempoRetardo);
+
+            CountDownLatch latch = new CountDownLatch(1);
+            int finalJ = j;
+            Platform.runLater(() -> {
+
+                Animation swap = createSwapAnimation(anterior, data.get(finalJ + 1));
+                swap.setOnFinished(e -> latch.countDown());
+                swap.play();
+            });
+            latch.await();
+
+            Platform.runLater(() -> anterior.getNode().setStyle("-fx-background-color: blue;"));
+            j--;
+            Thread.sleep(tiempoRetardo);
+        }
+
+        Platform.runLater(() -> actual.getNode().setStyle("-fx-background-color: blue;"));
+        Thread.sleep(tiempoRetardo);
+    }
+}
+
+                btnListaNueva.setDisable(false);
+                btnBurbuja.setDisable(false);
+                btnQuicksort.setDisable(false);
+                btnInsercion.setDisable(false);
+                btnSeleccion.setDisable(false);
+
+                return null;
+            }
+        };
+    }
+
+
+
+
+
+
 
     //METODO QUICKORT
     private Task<Void> quicksortTask(Series<String, Number> series) {
@@ -245,9 +345,127 @@ this.btnQuicksort.setDisable(true);
             swap.play();
         });
         latch.await();
-
+        btnListaNueva.setDisable(false);
+        btnBurbuja.setDisable(false);
+        btnQuicksort.setDisable(false);
+        btnInsercion.setDisable(false);
+        btnSeleccion.setDisable(false);
         return i + 1;
     }
+    //**********************************************************************//
+    private Task<Void> sacudidaTask(Series<String, Number> series) {
+
+        return new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                ObservableList<Data<String, Number>> data = series.getData();
+                boolean intercambiado = true;
+                int inicio = 0;
+                int fin = data.size() - 1;
+
+                while (intercambiado) {
+                    intercambiado = false;
+
+                    // Recorrido de izquierda a derecha
+                    for (int i = inicio; i < fin; i++) {
+                        if (data.get(i).getYValue().doubleValue() > data.get(i + 1).getYValue().doubleValue()) {
+                            intercambiar(data, i, i + 1);
+                            intercambiado = true;
+                        }
+                        Thread.sleep(tiempoRetardo);
+                    }
+
+                    // Si no hubo intercambios, el arreglo ya está ordenado
+                    if (!intercambiado) {
+                        break;
+                    }
+
+                    intercambiado = false;
+                    fin--; // Reducir el extremo superior
+
+                    // Recorrido de derecha a izquierda
+                    for (int i = fin; i > inicio; i--) {
+                        if (data.get(i).getYValue().doubleValue() < data.get(i - 1).getYValue().doubleValue()) {
+                            intercambiar(data, i, i - 1);
+                            intercambiado = true;
+                        }
+                        Thread.sleep(tiempoRetardo);
+                    }
+
+                    inicio++; // Incrementar el extremo inferior
+                }
+                return null;
+            }
+        };
+    }
+
+    private void sacudidaOptimizado(ObservableList<Data<String, Number>> data) throws InterruptedException {
+        boolean intercambiado = true;
+        int inicio = 0;
+        int fin = data.size() - 1;
+
+        while (intercambiado) {
+            intercambiado = false;
+
+            // Recorrido de izquierda a derecha
+            for (int i = inicio; i < fin; i++) {
+                if (data.get(i).getYValue().doubleValue() > data.get(i + 1).getYValue().doubleValue()) {
+                    intercambiar(data, i, i + 1);
+                    intercambiado = true;
+                }
+                Thread.sleep(tiempoRetardo);
+            }
+
+            // Si no hubo intercambios, el arreglo está ordenado
+            if (!intercambiado) break;
+
+            fin--; // Decrementar el final del recorrido
+
+            intercambiado = false;
+
+            // Recorrido de derecha a izquierda
+            for (int i = fin; i > inicio; i--) {
+                if (data.get(i).getYValue().doubleValue() < data.get(i - 1).getYValue().doubleValue()) {
+                    intercambiar(data, i, i - 1);
+                    intercambiado = true;
+                }
+                Thread.sleep(tiempoRetardo);
+            }
+
+            inicio++; // Incrementar el inicio del recorrido
+        }
+    }
+
+    private void intercambiar(ObservableList<Data<String, Number>> data, int index1, int index2) throws InterruptedException {
+        Data<String, Number> primero = data.get(index1);
+        Data<String, Number> segundo = data.get(index2);
+
+        // Resaltar los nodos intercambiados
+        Platform.runLater(() -> {
+            primero.getNode().setStyle("-fx-background-color: red;");
+            segundo.getNode().setStyle("-fx-background-color: blue;");
+        });
+
+        CountDownLatch latch = new CountDownLatch(1);
+        Platform.runLater(() -> {
+            Animation swap = createSwapAnimation(primero, segundo);
+            swap.setOnFinished(e -> latch.countDown());
+            swap.play();
+        });
+        latch.await();
+
+        // Actualizar los valores
+        Number temp = primero.getYValue();
+        primero.setYValue(segundo.getYValue());
+        segundo.setYValue(temp);
+
+        // Resetear los colores
+        Platform.runLater(() -> {
+            primero.getNode().setStyle("-fx-background-color: none;");
+            segundo.getNode().setStyle("-fx-background-color: none;");
+        });
+    }
+    //**********************************************************************//
 
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
