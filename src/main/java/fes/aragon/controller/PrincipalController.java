@@ -19,7 +19,9 @@ import javafx.scene.chart.XYChart.Data;
 import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Button;
 import javafx.util.Duration;
+
 public class PrincipalController implements Initializable{
+
     public Button btnQuicksort;
     Data<String, Number> primero = null;
     Data<String, Number> segundo = null;
@@ -39,13 +41,10 @@ public class PrincipalController implements Initializable{
     @FXML
     private Button btnListaNueva;
     @FXML
+    private Button btnMezcla;
+    @FXML
     void metodoBurbuja(ActionEvent event) {
-        this.btnListaNueva.setDisable(true);
-        this.btnBurbuja.setDisable(true);
-        this.btnQuicksort.setDisable(true);
-        this.btnSeleccion.setDisable(true);
-        this.btnInsercion.setDisable(true);
-        this.btnSacudida.setDisable(true);
+        bloquearBotones();
 
         Task<Void> animateSortTask = burbujaTask(bacGrafica.getData().get(0));
         exec.submit(animateSortTask);
@@ -53,23 +52,13 @@ public class PrincipalController implements Initializable{
     }
     @FXML
     void metodoQuicksort(ActionEvent event) {
-        this.btnListaNueva.setDisable(true);
-        this.btnBurbuja.setDisable(true);
-        this.btnQuicksort.setDisable(true);
-        this.btnSeleccion.setDisable(true);
-        this.btnInsercion.setDisable(true);
-        this.btnSacudida.setDisable(true);
+        bloquearBotones();
         Task<Void> animateSortTask = quicksortTask(bacGrafica.getData().get(0));
         exec.submit(animateSortTask);
     }
     @FXML
     void SacudidaOptimizado(ActionEvent event) {
-        this.btnListaNueva.setDisable(true);
-        this.btnBurbuja.setDisable(true);
-        this.btnQuicksort.setDisable(true);
-        this.btnSeleccion.setDisable(true);
-        this.btnInsercion.setDisable(true);
-        this.btnSacudida.setDisable(true);
+        bloquearBotones();
         Task<Void> animateSortTask = SacudidaOptimizado(bacGrafica.getData().get(0));
         exec.submit(animateSortTask);
 
@@ -85,24 +74,14 @@ public class PrincipalController implements Initializable{
     }
     @FXML
     void metodoInsercion(ActionEvent event) {
-        this.btnListaNueva.setDisable(true);
-        this.btnBurbuja.setDisable(true);
-        this.btnQuicksort.setDisable(true);
-        this.btnSeleccion.setDisable(true);
-        this.btnInsercion.setDisable(true);
-        this.btnSacudida.setDisable(true);
+        bloquearBotones();
         Task<Void> animateSortTask = insercionTask(bacGrafica.getData().get(0));
         exec.submit(animateSortTask);
 
     }
     @FXML
     void metodoSeleccion(ActionEvent event) {
-        this.btnListaNueva.setDisable(true);
-this.btnBurbuja.setDisable(true);
-this.btnQuicksort.setDisable(true);
-        this.btnInsercion.setDisable(true);
-        this.btnSeleccion.setDisable(true);
-        this.btnSacudida.setDisable(true);
+        bloquearBotones();
         Task<Void> animateSortTask = seleccionTask(bacGrafica.getData().get(0));
         exec.submit(animateSortTask);
     }
@@ -170,12 +149,7 @@ this.btnQuicksort.setDisable(true);
                     });
                     Thread.sleep(tiempoRetardo);
                 }
-                btnListaNueva.setDisable(false);
-                btnBurbuja.setDisable(false);
-                btnQuicksort.setDisable(false);
-                btnInsercion.setDisable(false);
-                btnSeleccion.setDisable(false);
-                btnSacudida.setDisable(false);
+                desbloquearBotones();
                 return null;
             }
         };
@@ -225,11 +199,8 @@ this.btnQuicksort.setDisable(true);
                         });
                     }
                 }
-                btnListaNueva.setDisable(false);
-                btnBurbuja.setDisable(false);
-                btnQuicksort.setDisable(false);
-                btnInsercion.setDisable(false);
-                btnSeleccion.setDisable(false);
+                desbloquearBotones();
+
                 return null;
             }
         };
@@ -275,12 +246,7 @@ for(int h=0;h<data.size();h++) {
     }
 }
 
-                btnListaNueva.setDisable(false);
-                btnBurbuja.setDisable(false);
-                btnQuicksort.setDisable(false);
-                btnInsercion.setDisable(false);
-                btnSeleccion.setDisable(false);
-                btnSacudida.setDisable(false);
+                desbloquearBotones();
 
                 return null;
             }
@@ -353,12 +319,7 @@ for(int h=0;h<data.size();h++) {
             swap.play();
         });
         latch.await();
-        btnListaNueva.setDisable(false);
-        btnBurbuja.setDisable(false);
-        btnQuicksort.setDisable(false);
-        btnInsercion.setDisable(false);
-        btnSeleccion.setDisable(false);
-        btnSacudida.setDisable(false);
+        desbloquearBotones();
         return i + 1;
     }
     //**********************************************************************//
@@ -443,11 +404,8 @@ for(int h=0;h<data.size();h++) {
                     start++;
                 }
 
-                btnListaNueva.setDisable(false);
-                btnBurbuja.setDisable(false);
-                btnQuicksort.setDisable(false);
-                btnInsercion.setDisable(false);
-                btnSeleccion.setDisable(false);
+                desbloquearBotones();
+
 
                 return null;
             }
@@ -540,12 +498,8 @@ for(int h=0;h<data.size();h++) {
                     if (!swapped) break;
                 }
 
-                btnListaNueva.setDisable(false);
-                btnBurbuja.setDisable(false);
-                btnQuicksort.setDisable(false);
-                btnInsercion.setDisable(false);
-                btnSeleccion.setDisable(false);
-                btnSacudida.setDisable(false);
+                desbloquearBotones();
+
 
                 return null;
             }
@@ -610,4 +564,22 @@ for(int h=0;h<data.size();h++) {
         t.setDaemon(true);
         return t;
     });
+     public void bloquearBotones(){
+         this.btnListaNueva.setDisable(true);
+         this.btnBurbuja.setDisable(true);
+         this.btnQuicksort.setDisable(true);
+         this.btnSeleccion.setDisable(true);
+         this.btnInsercion.setDisable(true);
+         this.btnSacudida.setDisable(true);
+         this.btnMezcla.setDisable(true);
+     }
+    public void desbloquearBotones(){
+        this.btnListaNueva.setDisable(false);
+        this.btnBurbuja.setDisable(false);
+        this.btnQuicksort.setDisable(false);
+        this.btnSeleccion.setDisable(false);
+        this.btnInsercion.setDisable(false);
+        this.btnSacudida.setDisable(false);
+        this.btnMezcla.setDisable(false);
+    }
 }
